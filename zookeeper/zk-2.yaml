@@ -2,38 +2,38 @@
 kind: Deployment
 apiVersion: extensions/v1beta1
 metadata:
-  name: ykszktest-n2
+  name: zookeeper-n2
   namespace: {{.NAMESPACE}}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ykszktest-n2
+      app: zookeeper-n2
   template:
     metadata:
       labels:
-        app: ykszktest-n2
+        app: zookeeper-n2
     spec:
-      hostname: ykszktest-n2
+      hostname: zookeeper-n2
       volumes:
-        - name: ykszktest-data
+        - name: zookeeper-data
           hostPath:
-            path: /data/ykszktest-cluster/ykszktest-data-n2
-        - name: ykszktest-logs
+            path: /data/zookeeper-cluster/zookeeper-data-n2
+        - name: zookeeper-logs
           hostPath:
-            path: /data/ykszktest-cluster/ykszktest-logs-n2
+            path: /data/zookeeper-cluster/zookeeper-logs-n2
       dnsPolicy: ClusterFirst
       containers:
-        - name: ykszktest-n2
+        - name: zookeeper-n2
           image: zookeeper:3.4.10
           imagePullPolicy: Always
           volumeMounts:
-            - name: ykszktest-data
+            - name: zookeeper-data
               readOnly: false
-              mountPath: "/data/ykszktest-data"
-            - name: ykszktest-logs
+              mountPath: "/data/zookeeper-data"
+            - name: zookeeper-logs
               readOnly: false
-              mountPath: "/data/ykszktest-logs"
+              mountPath: "/data/zookeeper-logs"
           ports:
             - containerPort: 2181
             - containerPort: 2888
@@ -43,11 +43,11 @@ spec:
             - name: ZOO_MY_ID
               value: "2"
             - name: ZOO_SERVERS
-              value: server.1=ykszktest-n1:2888:3888 server.2=ykszktest-n2:2888:3888 server.3=ykszktest-n3:2888:3888
+              value: server.1=zookeeper-n1:2888:3888 server.2=zookeeper-n2:2888:3888 server.3=zookeeper-n3:2888:3888
             - name: ZOO_DATA_DIR
-              value: '/data/ykszktest-data'
+              value: '/data/zookeeper-data'
             - name: ZOO_DATA_LOG_DIR
-              value: '/data/ykszktest-logs'
+              value: '/data/zookeeper-logs'
           resources:
             limits:
               cpu: 250m
@@ -61,8 +61,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: ykszktest-n2
-  name: ykszktest-n2
+    app: zookeeper-n2
+  name: zookeeper-n2
   namespace: default
 spec:
   ports:
@@ -79,6 +79,6 @@ spec:
       targetPort: 3888
       name: leader-election
   selector:
-    app: ykszktest-n2
+    app: zookeeper-n2
   sessionAffinity: None
   type: ClusterIP
