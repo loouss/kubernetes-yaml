@@ -1,0 +1,86 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ykszktest-n1
+  namespace: {{.NAMESPACE}}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ykszktest-n1
+  template:
+    metadata:
+      labels:
+        app: ykszktest-n1
+    spec:
+      hostname: ykszktest-n1
+      volumes:
+        - name: ykszktest-data
+          nfs:
+            path: /zookeeper/development/data-zk1
+            server: 172.16.3.6
+        - name: ykszktest-logs
+          nfs:
+            path: /zookeeper/development/log-zk1
+            server: 172.16.3.6
+      dnsPolicy: ClusterFirst
+      containers:
+        - name: ykszktest-n1
+          image: zookeeper:3.4.10
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: ykszktest-data
+              readOnly: false
+              mountPath: "/data/ykszktest-data"
+            - name: ykszktest-logs
+              readOnly: false
+              mountPath: "/data/ykszktest-logs"
+          ports:
+            - containerPort: 2181
+            - containerPort: 2888
+            - containerPort: 3888
+          #command: ['tail', '-f', '/etc/hosts']
+          env:
+            - name: ZOO_MY_ID
+              value: "1"
+            - name: ZOO_SERVERS
+              value: server.1=ykszktest-n1:2888:3888 server.2=ykszktest-n2:2888:3888 server.3=ykszktest-n3:2888:3888
+            - name: ZOO_DATA_DIR
+              value: '/data/ykszktest-data'
+            - name: ZOO_DATA_LOG_DIR
+              value: '/data/ykszktest-logs'
+          resources:
+            limits:
+              cpu: 250m
+              memory: 256Mi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: ykszktest-n1
+  name: ykszktest-n1
+  namespace: default
+spec:
+  ports:
+    - port: 2181
+      protocol: TCP
+      targetPort: 2181
+      name: client
+    - port: 2888
+      protocol: TCP
+      targetPort: 2888
+      name: leader
+    - port: 3888
+      protocol: TCP
+      targetPort: 3888
+      name: leader-election
+  selector:
+    app: ykszktest-n1
+  sessionAffinity: None
+  type: ClusterIP
