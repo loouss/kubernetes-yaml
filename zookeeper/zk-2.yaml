@@ -1,6 +1,6 @@
 ---
-kind: Deployment
 apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
   name: zookeeper-n2
   namespace: {{.NAMESPACE}}
@@ -17,11 +17,13 @@ spec:
       hostname: zookeeper-n2
       volumes:
         - name: zookeeper-data
-          hostPath:
-            path: /data/zookeeper-cluster/zookeeper-data-n2
+          nfs:
+            path: /zookeeper/{{.NAMESPACE}}/data-zk2
+            server: {{.NFS_SERVER}}
         - name: zookeeper-logs
-          hostPath:
-            path: /data/zookeeper-cluster/zookeeper-logs-n2
+          nfs:
+            path: /zookeeper/{{.NAMESPACE}}/log-zk2
+            server: {{.NFS_SERVER}}
       dnsPolicy: ClusterFirst
       containers:
         - name: zookeeper-n2
